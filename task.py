@@ -48,21 +48,14 @@ def solveReg(regular_value_, letter_, stack_, start):
                 elif (not L.open) and (not R.open):
                     t.open = False
                     t.value = max(L.value, R.value)
-                    
-                else:
-                    t.open = L.open
-                    t.value = L.value
-                    t.canBeEmpty = L.canBeEmpty
 
-                    stack.append(t)
+                else:
+                    stack.append(L)
                     tmp = list(stack)
                     res1 = solveReg(regular_value, letter, tmp, i+1)
 
                     stack.pop()
-                    t.open = True
-                    t.value = R.value
-                    t.canBeEmpty = R.canBeEmpty
-                    stack.append(t)
+                    stack.append(R)
                     tmp = list(stack)
                     res2 = solveReg(regular_value, letter, tmp, i+1)
                     return max(res1, res2)
@@ -84,30 +77,26 @@ def solveReg(regular_value_, letter_, stack_, start):
                 # print(". L = ", L.value, L.open, L.canBeEmpty)
 
                 t = Token()
-                if L.open and R.open:
+                if (not L.open) & (not R.open):
+                    t.open = False
+                    if (not L.canBeEmpty):
+                        t.value = L.value
+                    else:
+                        t.value = max(L.value, R.value)
+
+                if (L.open) & (R.open):
                     t.open = True
                     t.value = L.value + R.value
 
-                if (not L.open) and R.open:
-                    if L.canBeEmpty:
-                        res.append(L.value)
-                        t.open = True
-                        t.value = R.value
-                    else:
-                        t.open = False
-                        t.value = L.value
-
-                if L.open and (not R.open):
+                if (L.open) & (not R.open):
                     if not R.canBeEmpty:
                         t.open = False
                         t.value = L.value + R.value
+
                     else:
-                        t.open = True
-                        t.value = L.value
-                        t.canBeEmpty = L.canBeEmpty
-                        stack.append(t)
+                        stack.append(L)
                         tmp = list(stack)
-                        res1 = solveReg(regular_value, letter, tmp, i+1)
+                        res1 = solveReg(regular_value, letter, tmp, i + 1)
 
                         stack.pop()
                         t.open = False
@@ -115,22 +104,28 @@ def solveReg(regular_value_, letter_, stack_, start):
                         t.canBeEmpty = L.canBeEmpty & R.canBeEmpty
                         stack.append(t)
                         tmp = list(stack)
-                        res2 = solveReg(regular_value, letter, tmp, i+1)
-
+                        res2 = solveReg(regular_value, letter, tmp, i + 1)
                         return max(res1, res2)
 
-                if (not L.open) and (not R.open):
+                if (not L.open) & (R.open):
+                    if not L.canBeEmpty:
                         t.open = False
-                        if (not L.canBeEmpty):
-                            t.value = L.value
-                        if (L.canBeEmpty) & (not R.canBeEmpty):
-                            t.value = L.value + R.value
-                        if (L.canBeEmpty) & (R.canBeEmpty):
-                            l.value = max(L.value, R.value)
+                        t.value = L.value
+                    else:
+                        stack.append(L)
+                        tmp = list(stack)
+                        res1 = solveReg(regular_value, letter, tmp, i + 1)
 
+                        stack.pop()
+                        stack.append(R)
+                        tmp = list(stack)
+                        res2 = solveReg(regular_value, letter, tmp, i + 1)
+                        return max(res1, res2)
+
+
+                t.canBeEmpty = L.canBeEmpty & R.canBeEmpty
                 # print(". t = ", t.value, t.open, t.canBeEmpty)
                 # print()
-                t.canBeEmpty = L.canBeEmpty & R.canBeEmpty
                 stack.append(t)
 
             if symb == '*':
@@ -144,11 +139,11 @@ def solveReg(regular_value_, letter_, stack_, start):
                 t = Token()
 
                 if T.open:
-                    t.open = True
                     t.value = math.inf
                 else:
-                    t.open = False
                     t.value = T.value
+
+                t.open = T.open
                 t.canBeEmpty = True
 
                 # print("* t = ", t.value, t.open, t.canBeEmpty)
